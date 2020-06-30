@@ -4,7 +4,7 @@ function CV=ComputeCV(allspikes,deltat)
 
     N=length(allspikes);
     Nbins=floor(N/deltat);
-    binnedSpikes = squeeze(sum(reshape(allspikes(1:Nbins*deltat),deltat,[]),1))/deltat;
+    binnedSpikes = squeeze(sum(reshape(allspikes(1:Nbins*deltat),deltat,[]),1));
 
 %     CV=std(binnedSpikes)./mean(binnedSpikes); % Biased estimator. Used in
 %     Fontenele et al PRL?

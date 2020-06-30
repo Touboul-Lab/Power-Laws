@@ -1,0 +1,233 @@
+% Simulation of the surrogate Poisson Network
+% (Destexhe, Touboul - PRL Comment, 2020).
+% (C) Touboul J.
+% jonathan.touboul@gmail.com.
+
+clear all
+close all
+
+Nn=1000;                % Number of "neurons"
+
+Spikes={};
+
+if ~exist('N_iter')
+    N_iter=1;           % N_iter is the number of independent simulations
+end
+
+% Numerical parameters
+dt=1e-2;
+h=5e-3;
+f=floor(h/dt);
+
+Tf=1000;
+N=round(Tf/dt);
+
+for mc=1:N_iter
+    
+    % Parameters of the Ornstein-Uhlenbeck rate vary randomly
+    theta=2+1*rand();           % Timescale parameter
+    sigma=0.7+0.8*rand();       % Diffusion coefficient
+    
+    mu_r=0e-4;
+    
+    
+    % B=randn(N,1);
+    
+    X=zeros(1,N);
+    PP=zeros(1,N);
+    PP2=zeros(1,N);
+    X0=1;
+    B=randn(N,1);
+    % W=randn(N,1);
+    for i=1:N
+        if i==1
+            X(i)=X0+sigma*sqrt(dt)*B(i);
+        else
+            X(i)=(1-theta*dt + osc*cos(omega*i*dt)*dt)*(X(i-1))+mu*dt+sigma*sqrt(dt)*B(i);
+            %         X(i)=X(i)+mu_r*randn();
+        end
+        %     if abs(X(i))>1
+        %         X(i)=X(i)-2*sigma*sqrt(dt)*B(i);
+        %     end
+        %     PP(i)=poissrnd(max(X(i),0)*dt);
+        PP2(i)=(poissrnd(Nn*max(X(i),0)));
+        progressbar(i,N);
+    end
+    
+    allspikes=PP2;
+    Spikes{mc}=allspikes;
+    % figure()
+    % plot(abs(Error))
+    
+    % figure()
+    % plot(Me,Va)
+    % hold on
+    % plot(Me_pert,Va_pert,'r')
+    %
+    % figure()
+    % plot(Me)
+    % hold on
+    % plot(Me_pert,'r')
+    %
+    % figure()
+    % plot(abs(Me-Me_pert))
+    
+    % figure(1)
+    % plot(allspikes)
+    
+    % figure()
+    % plot(allspikes)
+    % hold on
+    % plot(allspikespert)
+    %
+    %
+    % CV=ComputeCV(allspikes,50)
+    % %%
+    % Alls=allspikes;
+    % FullSize=length(allspikes);
+    % Sizes=FullSize
+    % binsize=1;
+    % for sss=Sizes
+    %     Ssum=allspikes(1:sss);
+    %
+    %     CumulativeSize=cumsum(Ssum);  % Nombre de spikes par bins
+    %     CumulativeSize=CumulativeSize(1:binsize:length(Ssum));
+    %     Vbin=diff(CumulativeSize);
+    %
+    %     Silences =find(Vbin==0);
+    %     t= diff(Silences)-1; % Duration of avalanches
+    %     t=[Silences(1),t];
+    %     TT=t(t>0);
+    % %     CumulativeSize=cumsum(Vbin);
+    %     s=diff(CumulativeSize(Silences));
+    %     s=[CumulativeSize(1),s];
+    %     SS=s;
+    %     s=s(t>0);
+    %     t=t(t>0);
+    %     if (numel(s)>5)
+    %     tabsize=tabulate(s);
+    %     tabdur=tabulate(t);
+    %     meansize=zeros(1,size(tabdur,1));
+    %     for dur_ind=1:size(tabdur,1)
+    %         meansize(dur_ind)=mean(s(t==tabdur(dur_ind,1)));
+    %     end
+    %     MM=meansize(~isnan(meansize));
+    %     TT=tabdur(~isnan(meansize));
+    %
+    %     figure(2)
+    %     hold on
+    %     plot(tabsize(:,1),tabsize(:,2),'*-')
+    %
+    %     figure(3)
+    %     title('Size')
+    %     loglog(tabsize(1:end,1),movmean(tabsize(:,2),3),'*-')
+    %     hold on
+    %
+    %     figure(4)
+    %     hold on
+    %     plot(tabdur(:,1),tabdur(:,2),'*-')
+    %
+    %     figure(5)
+    %     title('Duration')
+    %     loglog(tabdur(:,1),tabdur(:,2),'*-')
+    %     hold on
+    %     end
+    % end
+    % %%
+    % % if (numel(s)>5)
+    % [alphas,xmin,D,L]=plfit(s)
+    % [alphat,xmin,D,L]=plfitNoXmin(t)
+    % tabsize(:,2)=movmean(tabsize(:,2),3);
+    % % tabsize(:,2)=tabsize(:,2)-1;
+    % tmin=min(find(tabdur(:,2)==0));
+    % smin=min(find(tabsize(:,2)==0));
+    % T_no_zeros=tabdur(1:(tmin-1),:);
+    % S_no_zeros=tabsize(20:(smin-1),:);
+    % TT_no_zero=TT(TT.*MM>0);
+    % MM_no_zero=MM(TT.*MM>0);
+    %
+    % % alphat=polyfit(log(T_no_zeros(:,1)),log(T_no_zeros(:,2)),1);
+    % % alphat=-alphat(1)
+    %
+    % % alphas=polyfit(log(S_no_zeros(:,1)),log(S_no_zeros(:,2)),1);
+    % % alphas=-alphas(1)
+    %
+    % alphats=polyfit(log(TT_no_zero),log(MM_no_zero),1)
+    % alphats=alphats(1);
+    %
+    % Ratio=(alphat-1)/(alphas-1)
+    % alphas
+    %
+    % %
+    % % Ratio=(alphat-1)/(alphas-1)
+    % % alphats=polyfit(log(TT),log(MM),1)
+    % % [alpha_size,xmin_size,D_size]=Analyse_Avalanches(s,binsize)
+    % % [alpha_dur,xmin_dur,D_dur]=Analyse_Avalanches(t,binsize)
+    %
+    % Saved_Data(ks+1,1)=CV;
+    % Saved_Data(ks+1,2)=Ratio;
+    % Saved_Data(ks+1,3)=alphats(1);
+    % Saved_Data(ks+1,4)=alphat(1);
+    % Saved_Data(ks+1,5)=alphas(1);
+    % ks=ks+1;
+    % % figure(10)
+    % % hold on
+    % % plot(Saved_Data(ks,1),Saved_Data(ks,2),'*')
+    % % hold on
+    % % plot([0,max(Saved_Data(ks,1))],[1.5,1.5],'linewidth',2)
+    % % figure(11)
+    % % hold on
+    % % plot(Saved_Data(ks,1),Saved_Data(ks,3),'*')
+    %
+    % figure(12)
+    % hold on
+    % plot(Saved_Data(ks,1),Saved_Data(ks,2),'ks')
+    % plot(Saved_Data(ks,1),Saved_Data(ks,3),'b*')
+    %
+    % figure(23);
+    % hold on
+    % plot(Saved_Data(ks,5),Saved_Data(ks,4),'*');
+    % plot(1:0.01:3,1+(1.28)*(0:0.01:2),'linewidth',2)
+    % end
+    % % end
+    % %%
+    % % [alpha_dur,xmin_dur,D_dur,L_dur]=plfit(t);
+    % % plpva(t,xmin_dur,'reps',100);
+    %
+    % % [alpha_size,xmin_size,D_size,L_size]=plfit(s);
+    % % plpva(s,xmin_size,'reps',100);
+    %
+    % Saved_Data=Saved_Data(Saved_Data(:,2)<3,:);
+    % Saved_Data=Saved_Data(Saved_Data(:,3)<3,:);
+    % figure(12)
+    % hold on
+    % plot(Saved_Data(:,1),Saved_Data(:,2),'ks')
+    % plot(Saved_Data(:,1),Saved_Data(:,3),'b*')
+    % %%
+    % % Stats
+    % ncv=15;
+    % cvmin=min(Saved_Data(:,1));
+    % cvmax=max(Saved_Data(:,1));
+    % U=linspace(cvmin,cvmax,ncv+1);
+    % U=U(1:end-1);
+    % dcv=U(2)-U(1);
+    % slidmean_Ratio=zeros(1,ncv);
+    % slidstd_Ratio=zeros(1,ncv);
+    % slidmean_ts=zeros(1,ncv);
+    % slidstd_ts=zeros(1,ncv);
+    % k=0;
+    % for cv=U
+    %     k=k+1;
+    %     slidmean_Ratio(k)=mean(Saved_Data(find((Saved_Data(:,1)>=cv).*(Saved_Data(:,1)<(cv+dcv))),2));
+    %     slidstd_Ratio(k)=std(Saved_Data(find((Saved_Data(:,1)>=cv).*(Saved_Data(:,1)<(cv+dcv))),2));
+    %     slidmean_ts(k)=mean(Saved_Data(find((Saved_Data(:,1)>=cv).*(Saved_Data(:,1)<(cv+dcv))),3));
+    %     slidstd_ts(k)=std(Saved_Data(find((Saved_Data(:,1)>=cv).*(Saved_Data(:,1)<(cv+dcv))),3));
+    % end
+    % figure(12)
+    % hold on
+    % plot(linspace(cvmin,cvmax,ncv),slidmean_Ratio,'k','linewidth',2);
+    % shadedplot(linspace(cvmin,cvmax,ncv),slidmean_Ratio-slidstd_Ratio,slidmean_Ratio+slidstd_Ratio,[0.4 0.4 0.4])
+    % hold on
+    % plot(linspace(cvmin,cvmax,ncv),slidmean_ts,'b','linewidth',2);
+    % shadedplot(linspace(cvmin,cvmax,ncv),slidmean_ts-slidstd_ts,slidmean_ts+slidstd_ts,[0.4 0.4 0.9])
+end

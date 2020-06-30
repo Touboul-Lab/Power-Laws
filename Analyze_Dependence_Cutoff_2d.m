@@ -1,16 +1,17 @@
 % Avalanche Analysis (Destexhe, Touboul - PRL Comment, 2020).
 % (C) Touboul J. jonathan.touboul@gmail.com.
 
-load Spikes;  % Load here either Brunel or Poisson list of spikes
+% load ../Spikes3;  % Load here either Brunel or Poisson list of spikes
 
-PLOT_PL=1;      % 1: Plots Power-law
+PLOT_PL=0;      % 1: Plots Power-law
 PLOT_Font=1;    % 1: Plots like in Fontenele et al. 
 
 
-N_Spikes=20;%length(Spikes);    % Number of spike trains considered
-n=10;                           % Number of bins in the matrix. 
+N_Spikes=min(100,length(Spikes));    % Number of spike trains considered
+n=1;   % Number of bins in the matrix. 
 [Seuil_s_vect,Seuil_t_vect]=meshgrid(linspace(10,40,n),linspace(10,40,n));
-
+Seuil_s_vect=21;
+Seuil_t_vect=25;
 % Storage assignment %
 R_All_Kept=zeros(n,n,N_Spikes);
 A_All_Kept=zeros(n,n,N_Spikes);
@@ -123,8 +124,10 @@ end
 N_kept=N_Spikes;
 figure;
 imagesc(mean(R_All_Kept(:,:,1:N_kept),3))
+title('Ratio')
 figure
 imagesc(mean(A_All_Kept(:,:,1:N_kept),3))
+title('Average avalanche size scaling')
 
 P_val=zeros(n,n);
 for u=1:n
@@ -134,7 +137,7 @@ for u=1:n
 end
 figure;
 P_val(P_val>=0.1)=0.2;
-cmap=parula(10)
+cmap=parula(10);
 cmap(1,:)=[0.1 0.1 0.5];
 
 
@@ -143,21 +146,23 @@ colormap(cmap)
 caxis([0.,0.1])
 xlabel('Size Cutoff')
 ylabel('Duration Cutoff') 
+title('P-value map Sethna relationship')
 
 figure;
 imagesc(linspace(10,40,n),linspace(10,40,n),mean(R_All_Kept(:,:,1:N_kept),3));
 hold on
-% colormap(cmap)
-% caxis([0.,0.1])
 xlabel('Size Cutoff')
 ylabel('Duration Cutoff') 
 SS=linspace(10,40,n);
-[a,b]=find(P_val>0.05)
+[a,b]=find(P_val>0.05);
 plot(SS(b)-0.1,SS(a),'*k')
-[a,b]=find(P_val>0.01)
+[a,b]=find(P_val>0.01);
 plot(SS(b)+0.1,SS(a),'*k')
 colorbar()
+title('Ratio map and significance for Sethna relationship')
 %% Akaike test
 
 figure;hist(-L_PL_s(:)+L_LN_s(:),25)
+title('Distribution Akaike test values, avalanche size')
 figure;hist(-L_PL_t(:)+L_LN_t(:),25)
+title('Distribution Akaike test values, avalanche duration')

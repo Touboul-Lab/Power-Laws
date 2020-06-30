@@ -4,7 +4,11 @@
 % jonathan.touboul@gmail.com.
 
 Spikes={};
-for Iteration=1:200
+if ~exist('N_iter')
+    N_iter=1;
+end
+for Iteration=1:N_iter
+    fprintf(sprintf('Iteration %d/%d\n',Iteration,N_iter))
     
     Duration=5;     % Total duration
     dt=0.1e-3;      % time-step
@@ -71,7 +75,6 @@ for Iteration=1:200
     W(W<0)=-g*J;
     Rasterplot=zeros(N,NTimes);
     Rasterplot_pert=zeros(N,NTimes);
-    tic();
     
     V=V_r*ones(N,1);            % Voltage vector
     
@@ -102,7 +105,6 @@ for Iteration=1:200
 %         progressbar(i,NTimes);
         
     end
-    toc
     Spikes{Iteration}=allspikes;
     
 end
