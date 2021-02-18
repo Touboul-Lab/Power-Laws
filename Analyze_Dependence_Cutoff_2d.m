@@ -1,29 +1,40 @@
-% Avalanche Analysis (Destexhe, Touboul - PRL Comment, 2020).
+% Avalanche Analysis (Destexhe, Touboul - eNeuro Manuscript, 2021).
 % (C) Touboul J. jonathan.touboul@gmail.com.
 
 % load ../Spikes3;  % Load here either Brunel or Poisson list of spikes
 
-PLOT_PL=0;      % 1: Plots Power-law
-PLOT_Font=1;    % 1: Plots like in Fontenele et al. 
+if PLOT_LEVEL==1
+    PLOT_PL=0;      % 1: Plots Power-law
+    PLOT_Font=0;    % 1: Plots like in Fontenele et al. 
+elseif PLOT_LEVEL==2
+    PLOT_PL=0;
+    PLOT_Font=1;
+else
+    PLOT_PL=1;
+    PLOT_Font=1;
+end
 
 
 N_Spikes=min(100,length(Spikes));    % Number of spike trains considered
-n=1;   % Number of bins in the matrix. 
-[Seuil_s_vect,Seuil_t_vect]=meshgrid(linspace(10,40,n),linspace(10,40,n));
-Seuil_s_vect=21;
-Seuil_t_vect=25;
+% n_bin=1;   % Number of bins in the matrix. 
+if n_bin>1
+    [Seuil_s_vect,Seuil_t_vect]=meshgrid(linspace(10,40,n_bin),linspace(10,40,n_bin));
+else
+    Seuil_s_vect=21;
+    Seuil_t_vect=25;
+end
 % Storage assignment %
-R_All_Kept=zeros(n,n,N_Spikes);
-A_All_Kept=zeros(n,n,N_Spikes);
+R_All_Kept=zeros(n_bin,n_bin,N_Spikes);
+A_All_Kept=zeros(n_bin,n_bin,N_Spikes);
 
-L_PL_s=zeros(n,n,N_Spikes);
-L_PL_t=zeros(n,n,N_Spikes);
-L_LN_s=zeros(n,n,N_Spikes);
-L_LN_t=zeros(n,n,N_Spikes);
+L_PL_s=zeros(n_bin,n_bin,N_Spikes);
+L_PL_t=zeros(n_bin,n_bin,N_Spikes);
+L_LN_s=zeros(n_bin,n_bin,N_Spikes);
+L_LN_t=zeros(n_bin,n_bin,N_Spikes);
 
 
-for u=1:n
-    for v=1:n
+for u=1:n_bin
+    for v=1:n_bin
         Seuil_s=Seuil_s_vect(u,v);
         Seuil_t=Seuil_t_vect(u,v);
         Ratio_All=[];
@@ -87,22 +98,22 @@ for u=1:n
             R_All_Kept(u,v,i)=Ratio;
             A_All_Kept(u,v,i)=alphats;
             
-            if PLOT_Font
-                figure(2*u-1)
+            if PLOT_Font || n_bin==1
+                figure(200)
                 hold on
                 plot(CV,Ratio,'rs','MarkerSize',10)
                 plot(CV,alphats,'b*','MarkerSize',10)
                 title(sprintf('Threshold size:%d, Threshold Duration=%d',Seuil_s,Seuil_t))
 
-                figure(2*u);
+%                 figure(2*u+fig_base);
             %     hold on
             %     plot(alphas,alphat,'*');
             %     plot(1:0.01:3,1+(1.28)*(0:0.01:2),'linewidth',2)
             %     title(sprintf('Threshold size:%d, Threshold Duration=%d',Seuil_s,Seuil_t))
-                hold on
+%                 hold on
             %     plot(CV,Ratio_xmin,'rs','MarkerSize',10)
-                plot(CV,alphats,'b*','MarkerSize',10)
-                title(sprintf('With xmin, Threshold size:%d, Threshold Duration=%d',Seuil_s,Seuil_t))
+%                 plot(CV,alphats,'b*','MarkerSize',10)
+%                 title(sprintf('With xmin, Threshold size:%d, Threshold Duration=%d',Seuil_s,Seuil_t))
             end
             if PLOT_PL
                   if (u+v==2)
@@ -122,47 +133,52 @@ end
 % Computation of the p-value for Sethna's relationship. 
 
 N_kept=N_Spikes;
-figure;
-imagesc(mean(R_All_Kept(:,:,1:N_kept),3))
-title('Ratio')
-figure
-imagesc(mean(A_All_Kept(:,:,1:N_kept),3))
-title('Average avalanche size scaling')
+if PLOT_LEVEL==3
+    figure;
+    imagesc(mean(R_All_Kept(:,:,1:N_kept),3))
+    title('Ratio')
+    figure
+    imagesc(mean(A_All_Kept(:,:,1:N_kept),3))
+    title('Average avalanche size scaling')
+end
 
-P_val=zeros(n,n);
-for u=1:n
-    for v=1:n
+P_val=zeros(n_bin,n_bin);
+for u=1:n_bin
+    for v=1:n_bin
         [h,P_val(u,v)]=ttest2(R_All_Kept(u,v,1:N_kept),A_All_Kept(u,v,1:N_kept));
     end
 end
-figure;
-P_val(P_val>=0.1)=0.2;
-cmap=parula(10);
-cmap(1,:)=[0.1 0.1 0.5];
+if n_bin>1
+    figure;
+    P_val(P_val>=0.1)=0.2;
+    cmap=parula(10);
+    cmap(1,:)=[0.1 0.1 0.5];
 
 
-imagesc(linspace(10,40,n),linspace(10,40,n),P_val);
-colormap(cmap)
-caxis([0.,0.1])
-xlabel('Size Cutoff')
-ylabel('Duration Cutoff') 
-title('P-value map Sethna relationship')
+    imagesc(linspace(10,40,n_bin),linspace(10,40,n_bin),P_val);
+    colormap(cmap)
+    caxis([0.,0.1])
+    xlabel('Size Cutoff')
+    ylabel('Duration Cutoff') 
+    title('P-value map Sethna relationship')
 
-figure;
-imagesc(linspace(10,40,n),linspace(10,40,n),mean(R_All_Kept(:,:,1:N_kept),3));
-hold on
-xlabel('Size Cutoff')
-ylabel('Duration Cutoff') 
-SS=linspace(10,40,n);
-[a,b]=find(P_val>0.05);
-plot(SS(b)-0.1,SS(a),'*k')
-[a,b]=find(P_val>0.01);
-plot(SS(b)+0.1,SS(a),'*k')
-colorbar()
-title('Ratio map and significance for Sethna relationship')
+    figure;
+    imagesc(linspace(10,40,n_bin),linspace(10,40,n_bin),mean(R_All_Kept(:,:,1:N_kept),3));
+    hold on
+    xlabel('Size Cutoff')
+    ylabel('Duration Cutoff') 
+    SS=linspace(10,40,n_bin);
+    [a,b]=find(P_val>0.05);
+    plot(SS(b)-0.1,SS(a),'*k')
+    [a,b]=find(P_val>0.01);
+    plot(SS(b)+0.1,SS(a),'*k')
+    colorbar()
+    title('Ratio map and significance for Sethna relationship')
+end
 %% Akaike test
-
-figure;hist(-L_PL_s(:)+L_LN_s(:),25)
-title('Distribution Akaike test values, avalanche size')
-figure;hist(-L_PL_t(:)+L_LN_t(:),25)
-title('Distribution Akaike test values, avalanche duration')
+if PLOT_LEVEL==3
+    figure;hist(-L_PL_s(:)+L_LN_s(:),25)
+    title('Distribution Akaike test values, avalanche size')
+    figure;hist(-L_PL_t(:)+L_LN_t(:),25)
+    title('Distribution Akaike test values, avalanche duration')
+end
